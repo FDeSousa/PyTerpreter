@@ -19,6 +19,7 @@ class PyMenuFucker(Menu):
 	"""	The interpreter's menu class, which displays and works
 		on the selected options
 	"""	
+	
 	def __init__(self):
 		"Only initialises the super class currently"
 		Menu.__init__(self)
@@ -63,6 +64,19 @@ class PyFucker(Interpreter):
 		for doing all of the heavy lifting
 	"""	
 	
+	# Since Python has no switch..case statement, using dictionary
+	# to execute a function depending upon the current command
+	# Inspiration came from: http://bytebaker.com/2008/11/03/switch-case-statement-in-python/
+	commands = {'<' : dec_pointer,
+				'>' : inc_pointer,
+				'+' : inc_data,
+				'-' : dec_data,
+				'[' : loop_start,
+				']' : loop_end,
+				'.' : print_char,
+				',' : read_char
+	}
+	
 	def __init__(self, tointerpret):
 		"Initialize program with the parsed-in program string"
 		# Initialise the super class
@@ -79,34 +93,104 @@ class PyFucker(Interpreter):
 		"The main run loop for the interpreter"
 		# Run the super class run() method first off
 		Interpreter.run(self)
+		
+		# The pointer and data array are unique to the run-time, so
+		# initialise a pointer to 0 before starting interpreter:
+		pointer = 0
+		# and set our numbers array to all zeroes, 30,000 times over:
+		arr = [0] * 30000
+		
 		# Should go through the program string and decide what
 		# to do per-character
-		# Maybe use RegEx to remove all the white space characters?
 		# To allow iterating backwards through the string, we're
 		# using i to hold the index in the string
 		i = 0
 		while i < len(self.program):
-			if c == '<':
-				if self.pointer > 0:
-					self.pointer -= 1
-					i += 1
-			elif c == '>':
-				if self.pointer < len(self.arr)-1:
-					self.pointer += 1
-					i += 1
-			elif c == '+':
-				self.arr[self.pointer] += 1
-				i += 1
-			elif c == '-':
-				self.arr[self.pointer] -= 1
-				i += 1
-			elif c == '[':
-				# If current pointer is >= 1, enter loop
-			elif c == ']':
-				# If current pointer is >= 1, return into loop
-			elif c == '.':
-				# Print char representation of arr[pointer]
-				i += 1
-			elif c == ',':
-				# Get one char from keyboard into arr[pointer]
-				i += 1
+			# Hold the current char/command to execute in c
+			c = self.program[i]
+			
+			try:
+				# Try to execute the command here
+				commands[c](self, pointer, arr, i)
+			except KeyError:
+				# If the command isn't found, dictionary will raise a
+				# KeyError exception as the command is the key
+				# We don't much mind, just ignore the key and carry on!
+				pass
+	
+	def dec_pointer(self, pointer, arr, i):
+		"Decrement the program pointer"
+		# Function for the '<' command
+		
+		# Only decrement the pointer if it's more than 0
+		if pointer > 0:
+			pointer -= 1
+			i += 1
+	
+	def inc_pointer(self, pointer, arr, i):
+		"Increment the program pointer"
+		# Function for the '>' command
+		
+		# Only increment the pointer if it's less than arr's length
+		if pointer < len(arr)-1:
+			pointer += 1
+			i += 1
+	
+	def inc_data(self, pointer, arr, i):
+		"Increment the data value in arr[pointer]"
+		# Function for the '+' command
+		
+		# No conditional here, just increment the data at arr[pointer]
+		arr[pointer] += 1
+		i += 1
+	
+	def dec_data(self, pointer, arr, i):
+		"Decrement the data value in arr[pointer]"
+		# Function for the '-' command
+		
+		# No conditional here, just decrement the data at arr[pointer]
+		arr[pointer] -= 1
+		i += 1
+	
+	def loop_start(self, pointer, arr, i):
+		"Check for loop start condition, start if possible"
+		# Function for the '[' command
+		
+		# If data at arr[pointer] is >= 1, enter loop
+		# Until I figure out how I want to do this, have just a pass
+		pass
+	
+	def loop_end(self, pointer, arr, i):
+		"Check for loop end condition, restart if possible"
+		# Function for the ']' command
+		
+		# If data at arr[pointer] is >= 1, return into loop
+		# Until I figure out how I want to do this, have just a pass
+		pass
+	
+	def print_char(self, pointer, arr, i):
+		"Print the char representating the data in arr[pointer]"
+		# Function for the '.' command
+		
+		# Print char representation of arr[pointer]
+		print chr(arr[pointer])
+		i += 1
+	
+	def read_char(self, pointer, arr, i):
+		"Read one char's associated value into arr[pointer]"
+		# Function for the ',' command
+		
+		# Currently only reads one char at a time, and only after
+		# pressing return/enter. To get rid of the '\n' from the
+		# .read() buffer, we do another .read(1)
+		# Must find a way to read just the one byte...
+		
+		# Get one char from keyboard into char_in
+		char_in = ord(sys.stdin.read(1))
+		# To make sure we don't get a '\n' next time, read another
+		sys.stdin.read(1)
+		# Now place char_in into arr[pointer]
+		arr[pointer] = char_in
+		i += 1
+
+
