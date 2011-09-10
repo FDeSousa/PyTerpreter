@@ -84,10 +84,6 @@ class PyFucker(Interpreter):
 		# Make a copy of the string to interpret while first replacing
 		# digits/whitespace/word characters with nothing
 		program = re.sub('[\d\s\w]', '', tointerpret.lower())
-		# Initialise a pointer to 0 before starting interpreter
-		pointer = 0
-		# Set our numbers array to all zeroes, thirty thousand times
-		arr = [0] * 30000
 	
 	def run(self):
 		"The main run loop for the interpreter"
